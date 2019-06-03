@@ -26,6 +26,16 @@ export default async function resolveConfig(commander, {needsJscodeshift, needsE
     }
   }
   config = getCLIParamsConfig(config, commander);
+
+
+  let fullOutputFileExtension;
+
+  if (config.outputFileExtension === null) {
+    fullOutputFileExtension = '';
+  } else {
+    fullOutputFileExtension = '.' + (config.outputFileExtension || 'js');
+  }
+
   return {
     decaffeinateArgs: resolveDecaffeinateArgs(config),
     filesToProcess: config.filesToProcess,
@@ -34,6 +44,7 @@ export default async function resolveConfig(commander, {needsJscodeshift, needsE
     fileFilterFn: config.fileFilterFn,
     customNames: resolveCustomNames(config.customNames),
     outputFileExtension: config.outputFileExtension || 'js',
+    fullOutputFileExtension,
     fixImportsConfig: resolveFixImportsConfig(config),
     jscodeshiftScripts: config.jscodeshiftScripts,
     landConfig: config.landConfig,

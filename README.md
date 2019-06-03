@@ -224,7 +224,8 @@ file values; see the result of `--help` for more information.
   to provide a specific target directory, name, and/or file extension for any
   specific files being converted.
 * `outputFileExtension`: an optional file extension, like `"ts"` or `"jsx"`. If
-  specified, all converted files will have this extension.
+  specified, all converted files will have this extension. If null, will simply
+  remove the existing extension without replacing.
 * `mochaEnvFilePattern`: an optional regular expression string. If specified,
   all generated JavaScript files with a path matching this pattern have the text
   `/* eslint-env mocha */` added to the start. For example, `"^.*-test.js$"`.

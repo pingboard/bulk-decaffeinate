@@ -55,9 +55,18 @@ Re-run with the "check" command for more details.`);
       await copy(`${coffeePath}`, `${backupPathFor(coffeePath)}`);
     });
 
+
+  const makeFileRenameMessage = (fileDescription, isInProgress = false) => {
+    if (config.fullOutputFileExtension) {
+      return `${isInProgress ? 'Renaming' : 'Rename'} ${fileDescription} from .coffee to .${config.fullOutputFileExtension}`;
+    }
+
+    return `${isInProgress ? 'Removing' : 'Remove'} .coffee extension from ${fileDescription}`;
+  };
+
   await runWithProgressBar(
     config,
-    `Renaming files from .coffee to .${config.outputFileExtension}...`,
+    `${makeFileRenameMessage('files', true)}...`,
     movingCoffeeFiles,
     async function(coffeePath) {
       await move(coffeePath, jsPathFor(coffeePath, config));
@@ -65,7 +74,7 @@ Re-run with the "check" command for more details.`);
 
   let shortDescription = getShortDescription(coffeeFiles);
   let renameCommitMsg =
-    `decaffeinate: Rename ${shortDescription} from .coffee to .${config.outputFileExtension}`;
+    `decaffeinate: ${makeFileRenameMessage(shortDescription)}`;
 
   if (movingCoffeeFiles.length > 0) {
     console.log(`Generating the first commit: "${renameCommitMsg}"...`);
