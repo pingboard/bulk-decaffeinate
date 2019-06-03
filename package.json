@@ -1,6 +1,7 @@
 {
   "name": "bulk-decaffeinate",
   "description": "Run decaffeinate and related operations on a whole codebase, or just part of one.",
+  "version": "0.0.0-development",
   "main": "dist/bulk-decaffeinate.js",
   "jsnext:main": "dist/bulk-decaffeinate.mjs",
   "preferGlobal": true,
@@ -11,6 +12,7 @@
     "prebuild": "npm run lint",
     "build": "rollup -c && babel jscodeshift-scripts --out-dir jscodeshift-scripts-dist",
     "lint": "eslint src test jscodeshift-scripts",
+    "prepare": "npm run build",
     "pretest": "npm run build",
     "test": "mocha test test/util",
     "semantic-release": "semantic-release pre && npm publish && semantic-release post"
