@@ -6,6 +6,7 @@ import getFilesToProcess from './config/getFilesToProcess';
 import prependCodePrefix from './modernize/prependCodePrefix';
 import prependMochaEnv from './modernize/prependMochaEnv';
 import runEslintFix from './modernize/runEslintFix';
+import runPrettier from './modernize/runPrettier';
 import runFixImports from './modernize/runFixImports';
 import runJscodeshiftScripts from './modernize/runJscodeshiftScripts';
 import makeCLIFn from './runner/makeCLIFn';
@@ -125,8 +126,11 @@ Re-run with the "check" command for more details.`);
   if (config.fixImportsConfig) {
     thirdCommitModifiedFiles = await runFixImports(jsFiles, config);
   }
-  if (!config.skipEslintFix) {
+  if (!config.skipPrettier) {
     await runEslintFix(jsFiles, config, {isUpdate: false});
+  }
+  if (!config.skipPrettier) {
+    await runPrettier(jsFiles, config);
   }
   if (config.codePrefix) {
     await prependCodePrefix(config, jsFiles, config.codePrefix);

@@ -11,7 +11,7 @@ import execLive from '../util/execLive';
  * Resolve the configuration from a number of sources: any number of config
  * files and CLI options. Then "canonicalize" the config as much as we can.
  */
-export default async function resolveConfig(commander, {needsJscodeshift, needsEslint} = {}) {
+export default async function resolveConfig(commander, {needsJscodeshift, needsEslint, needsPrettier} = {}) {
   let config = {};
 
   if (commander.config && commander.config.length > 0) {
@@ -43,9 +43,11 @@ export default async function resolveConfig(commander, {needsJscodeshift, needsE
     numWorkers: config.numWorkers || 8,
     skipVerify: config.skipVerify,
     skipEslintFix: config.skipEslintFix,
+    skipPrettier: config.skipPrettier,
     decaffeinatePath: await resolveDecaffeinatePath(config),
     jscodeshiftPath: needsJscodeshift ? await resolveJscodeshiftPath(config) : null,
     eslintPath: needsEslint ? await resolveEslintPath(config) : null,
+    prettierPath: needsPrettier ? await resolvePrettierPath(config) : null,
   };
 }
 
@@ -106,6 +108,7 @@ function getCLIParamsConfig(config, commander) {
     decaffeinatePath,
     jscodeshiftPath,
     eslintPath,
+    prettierPath,
   } = commander;
   // As a special case, specifying files to process from the CLI should cause
   // any equivalent config file settings to be ignored.
@@ -145,6 +148,9 @@ function getCLIParamsConfig(config, commander) {
   if (eslintPath) {
     config.eslintPath = eslintPath;
   }
+  if (prettierPath) {
+    config.prettierPath = prettierPath;
+  }
   return config;
 }
 
@@ -175,6 +181,16 @@ async function resolveEslintPath(config) {
     return config.eslintPath;
   }
   return await resolveBinary('eslint');
+}
+
+async function resolvePrettierPath(config) {
+  if (config.skipPrettier) {
+    return null;
+  }
+  if (config.prettierPath) {
+    return config.prettierPath;
+  }
+  return await resolveBinary('prettier');
 }
 
 /**

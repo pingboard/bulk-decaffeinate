@@ -253,6 +253,7 @@ file values; see the result of `--help` for more information.
   files fail to convert, it may leave the filesystem in a partially-converted
   state.
 * `skipEslintFix`: set to `true` to skip the ESLint step.
+* `skipPrettier`: set to `true` to skip the Prettier step.
 
 ### Configuring paths to external tools
 
@@ -267,3 +268,4 @@ These keys can be specified:
 * `decaffeinatePath`: the path to the decaffeinate binary.
 * `jscodeshiftPath`: the path to the jscodeshift binary.
 * `eslintPath`: the path to the eslint binary.
+* `prettierPath`: the path to the prettier binary.

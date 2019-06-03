@@ -64,6 +64,9 @@ export default function () {
     .option('--eslint-path [path]',
       `The path to the eslint binary. If none is specified, it will be
                               automatically discovered from node_modules and then from the PATH.`)
+    .option('--prettier-path [path]',
+      `The path to the prettier binary. If none is specified, it will be
+                              automatically discovered from node_modules and then from the PATH.`)
     .option('--allow-invalid-constructors',
       `Deprecated; decaffeinate now allows invalid constructors by default.`)
     .parse(process.argv);
@@ -77,10 +80,10 @@ async function runCommand(command) {
       let config = await resolveConfig(commander);
       await check(config);
     } else if (command === 'convert') {
-      let config = await resolveConfig(commander, {needsJscodeshift: true, needsEslint: true});
+      let config = await resolveConfig(commander, {needsJscodeshift: true, needsEslint: true, needsPrettier: true});
       await convert(config);
     } else if (command === 'modernize-js') {
-      let config = await resolveConfig(commander, {needsJscodeshift: true, needsEslint: true});
+      let config = await resolveConfig(commander, {needsJscodeshift: true, needsEslint: true, needsPrettier: true});
       await modernizeJS(config);
     } else if (command === 'view-errors') {
       await viewErrors();
