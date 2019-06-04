@@ -11,9 +11,12 @@ import execLive from '../util/execLive';
 import getFilesUnderPath from '../util/getFilesUnderPath';
 
 export default async function runFixImports(jsFiles, config) {
-  let {searchPath, absoluteImportPaths} = config.fixImportsConfig;
+  let {searchPath, absoluteImportPaths, jscodeshiftScripts} = config.fixImportsConfig;
   if (!absoluteImportPaths) {
     absoluteImportPaths = [];
+  }
+  if(!jscodeshiftScripts) {
+    jscodeshiftScripts = [];
   }
   let scriptPath = join(__dirname, '../jscodeshift-scripts-dist/fix-imports.js');
 
@@ -33,6 +36,14 @@ export default async function runFixImports(jsFiles, config) {
     await execLive(`\
       ${config.jscodeshiftPath} --parser flow -t ${scriptPath} \
         ${eligibleRelativePaths.join(' ')} --encoded-options=${encodedOptions}`);
+
+    jscodeshiftScripts.forEach(async (jscodeshiftScript) => {
+      console.log(`Running jscodeshift script ${jscodeshiftScript} across the whole codebase...`);
+      const jscodeshiftScriptPath = resolveJscodeshiftScriptPath(jscodeshiftScript);
+      await execLive(`\
+        ${config.jscodeshiftPath} --parser flow -t ${jscodeshiftScriptPath} \
+          ${eligibleRelativePaths.join(' ')} --encoded-options=${encodedOptions}`);
+    });
   }
   return eligibleFixImportsFiles;
 }
@@ -40,7 +51,7 @@ export default async function runFixImports(jsFiles, config) {
 async function getEligibleFixImportsFiles(config, searchPath, jsFiles) {
   let jsBasenames = jsFiles.map(p => basename(p, '.js'));
   let resolvedPaths = jsFiles.map(p => resolve(p));
-  let allJsFiles = await getFilesUnderPath(searchPath, p => p.endsWith('.js'));
+  let allJsFiles = await getFilesUnderPath(searchPath, p => p.endsWith('.js') || p.endsWith('.jsx'));
   await runWithProgressBar(
     config,
     'Searching for files that may need to have updated imports...',
@@ -60,4 +71,16 @@ async function getEligibleFixImportsFiles(config, searchPath, jsFiles) {
       return {error: null};
     });
   return resolvedPaths;
+}
+
+function resolveJscodeshiftScriptPath(scriptPath) {
+  if ([
+      'prefer-function-declarations.js',
+      'remove-coffee-from-imports.js',
+      'top-level-this-to-exports.js',
+      'remove-coffee-from-all-modified-imports.js',
+    ].includes(scriptPath)) {
+    return join(__dirname, `../jscodeshift-scripts-dist/${scriptPath}`);
+  }
+  return scriptPath;
 }

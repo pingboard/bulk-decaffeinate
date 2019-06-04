@@ -136,6 +136,9 @@ export default function (fileInfo, api, options) {
    * Turn an import string into an absolute path to a JS file.
    */
   function resolveImportPath(importingFilePath, importPath) {
+    if (importPath.endsWith('.coffee')) {
+      importPath = importPath.replace(/\.coffee$/, '');
+    }
     if (!importPath.endsWith('.js')) {
       importPath += '.js';
     }

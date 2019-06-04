@@ -208,13 +208,14 @@ file values; see the result of `--help` for more information.
     so the code can run in babel and node.
 * `fixImportsConfig`: an optional object. If present, a whole-codebase pass will
   be done to fix any incorrect imports involving the converted files. It should
-  be an object with up to two fields:
+  be an object with up to three fields:
   * `searchPath`: a required field specifying a path to a directory containing
     all JS files in the project.
   * `absoluteImportPaths`: an optional array of strings, each of which is used
     as an absolute path starting point when resolving imports. This is necessary
     if you do any tricks to get absolute-style imports in your project, since
     the fix-imports script needs to be able to resolve import names to files.
+  * `jscodeshiftScripts`: an optional array of paths to [jscodeshift](https://github.com/facebook/jscodeshift) scripts to run after decaffeinate, *on every file that imports a converted file*. Use this arg to run scripts that fix imports, as opposed to scripts that clean up the converted code.
 
 ### Other configuration
 
