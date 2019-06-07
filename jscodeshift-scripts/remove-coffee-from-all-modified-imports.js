@@ -63,6 +63,20 @@ export default function transformer(file, api, options) {
         source.value = stripCoffeeExtension(source.value);
       });
     root
+      .find(j.ExportNamedDeclaration, {
+        source: {
+          type: 'Literal',
+        },
+      })
+      .filter(path => {
+        let importPath = resolveImportPath(thisFilePath, path.node.source.value);
+        return includes(convertedFiles, importPath);
+      })
+      .forEach(path => {
+        let source = path.node.source;
+        source.value = stripCoffeeExtension(source.value);
+      });
+    root
       .find(j.CallExpression, {
         callee: {
           type: 'Identifier',
