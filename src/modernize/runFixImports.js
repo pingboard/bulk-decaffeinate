@@ -44,13 +44,14 @@ export default async function runFixImports(jsFiles, config) {
       ${config.jscodeshiftPath} --parser flow -t ${scriptPath} \
         ${eligibleRelativePaths.join(' ')} --encoded-options=${encodedOptions}`);
 
-    jscodeshiftScripts.forEach(async (jscodeshiftScript) => {
+    for (let i = 0; i < jscodeshiftScripts.length; i += 1) {
+      const jscodeshiftScript = jscodeshiftScripts[i];
       console.log(`Running jscodeshift script ${jscodeshiftScript} across the whole codebase...`);
       const jscodeshiftScriptPath = resolveJscodeshiftScriptPath(jscodeshiftScript);
       await execLive(`\
         ${config.jscodeshiftPath} --parser flow -t ${jscodeshiftScriptPath} \
           ${eligibleRelativePaths.join(' ')} --encoded-options=${encodedOptions}`);
-    });
+    }
   }
 
   if (eligibleFixImportsCoffeeFiles.length > 0) {

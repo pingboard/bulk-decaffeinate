@@ -135,7 +135,7 @@ Re-run with the "check" command for more details.`);
   if (config.fixImportsConfig) {
     thirdCommitModifiedFiles = await runFixImports(jsFiles, config);
   }
-  if (!config.skipPrettier) {
+  if (!config.skipEslintFix) {
     await runEslintFix(jsFiles, config, {isUpdate: false});
   }
   if (!config.skipPrettier) {
