@@ -12,6 +12,7 @@ import getFilesUnderPath from '../util/getFilesUnderPath';
 
 const JS_OR_JSX_EXTENSION = /\.jsx?$/;
 const COFFEE_EXTENSION = /\.coffee$/;
+const ORIGINAL_COFFEE_EXTENSION = /\.original\.coffee$/;
 
 export default async function runFixImports(jsFiles, config) {
   let {searchPath, absoluteImportPaths, jscodeshiftScripts} = config.fixImportsConfig;
@@ -28,9 +29,9 @@ export default async function runFixImports(jsFiles, config) {
     absoluteImportPaths: absoluteImportPaths.map(p => resolve(p)),
   };
   let eligibleFixImportsFiles = await getEligibleFixImportsFiles(
-    config, searchPath, jsFiles, JS_OR_JSX_EXTENSION);
+    config, searchPath, jsFiles, p => JS_OR_JSX_EXTENSION.test(p));
   let eligibleFixImportsCoffeeFiles = await getEligibleFixImportsFiles(
-    config, searchPath, jsFiles, COFFEE_EXTENSION);
+    config, searchPath, jsFiles, p => COFFEE_EXTENSION.test(p) && !ORIGINAL_COFFEE_EXTENSION.test(p));
 
   console.log('Fixing any imports across the whole codebase...');
   if (eligibleFixImportsFiles.length > 0) {
@@ -63,10 +64,10 @@ export default async function runFixImports(jsFiles, config) {
   return [...eligibleFixImportsFiles, ...eligibleFixImportsCoffeeFiles];
 }
 
-async function getEligibleFixImportsFiles(config, searchPath, jsFiles, extension) {
+async function getEligibleFixImportsFiles(config, searchPath, jsFiles, fileMatcher) {
   let jsBasenames = jsFiles.map(p => basename(p, '.js'));
   let resolvedPaths = jsFiles.map(p => resolve(p));
-  let allJsFiles = await getFilesUnderPath(searchPath, p => p.match(extension));
+  let allJsFiles = await getFilesUnderPath(searchPath, fileMatcher);
   await runWithProgressBar(
     config,
     'Searching for files that may need to have updated imports...',
