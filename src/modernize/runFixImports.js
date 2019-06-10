@@ -123,10 +123,27 @@ async function fixImportsForCoffeeScript(filePath, convertedFiles) {
   const resolvedPath = resolve(filePath);
 
   let contents = (await readFile(resolvedPath)).toString();
+
   for (let jsBasename of jsBasenames) {
-    const pathName = `[a-z\\-\\.\\/]+${jsBasename}(\\.js\\.coffee)?`;
-    const requireStatement = `\\w+ = require\\(["'](${pathName})["']\\)`;
-    const hasAMatch = contents.match(new RegExp(requireStatement));
+    contents = fixFile(jsBasename, filePath, contents, convertedFiles);
+  }
+
+  await writeFile(resolvedPath, contents);
+}
+
+function fixFile(jsBasename, filePath, contents, convertedFiles) {
+  let remainingContents = contents.slice();
+
+  const pathName = `[a-z\\-\\.\\/]+${jsBasename}(\\.js\\.coffee)?`;
+  const requireStatement = `\\w+ = require\\(["'](${pathName})["']\\)`;
+  const requireStatementMatcher = new RegExp(requireStatement);
+
+  let hasAMatch;
+  let attempts = 0;
+
+  do {
+    hasAMatch = remainingContents.match(requireStatementMatcher);
+
     if (hasAMatch) {
       const requireLine = hasAMatch[0];
       const importPath = hasAMatch[1];
@@ -140,10 +157,16 @@ async function fixImportsForCoffeeScript(filePath, convertedFiles) {
         const updatedLine = `${requireLine.replace(/(\.js)?\.coffee/, '')}.default`;
         contents = contents.replace(requireLine, updatedLine);
       }
-    }
-  }
 
-  await writeFile(resolvedPath, contents);
+      // Skip past this line and check the next one, in case there are multiple imports with the same
+      // base name in this file.
+      remainingContents = remainingContents.slice(remainingContents.indexOf(requireLine) + requireLine.length);
+    }
+
+    attempts += 1;
+  } while (hasAMatch && attempts < 10); // Prevent infinite loops on accident by bailing after 10 tries
+
+  return contents;
 }
 
 /**
