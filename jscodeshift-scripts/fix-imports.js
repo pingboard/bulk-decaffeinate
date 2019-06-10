@@ -92,10 +92,11 @@ export default function (fileInfo, api, options) {
     // If any sort of property is accessed from the default import, we need it.
     // Also, the default import might be something like a function where we
     // imported it and the other module has a default export.
-    let needsDefaultImport =
+    let needsDefaultImport = exportsInfo.hasDefaultExport && (
       importManifest.defaultImportDirectAccesses.length > 0 ||
       importManifest.defaultImportObjectAccesses.length > 0 ||
-      (exportsInfo.hasDefaultExport && specifierIndex.defaultImport !== null);
+      (exportsInfo.hasDefaultExport && specifierIndex.defaultImport !== null)
+    );
 
     // If there are object-style accesses of named imports
     // (e.g. MyModule.myExport), then handle those with a star import. If we
@@ -109,7 +110,8 @@ export default function (fileInfo, api, options) {
       (!needsDefaultImport &&
         (specifierIndex.defaultImport !== null ||
         specifierIndex.starImport !== null)
-      );
+      ) ||
+      !exportsInfo.hasDefaultExport;
 
     let {defaultImportName, starImportName} = resolveImportObjectNames(
       specifierIndex, needsDefaultImport, needsStarImport,
