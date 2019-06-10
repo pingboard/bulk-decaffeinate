@@ -478,6 +478,20 @@ export default function (fileInfo, api, options) {
   function renameObjectAccesses(defaultImportName, starImportName, importManifest) {
     let defaultImportProperties = new Set(importManifest.defaultImportObjectAccesses);
     let starImportProperties = new Set(importManifest.namedImportObjectAccesses);
+
+    // Never rewrite a value as `null` — defer to the other name, at the very least.
+    if (defaultImportName === null && starImportName === null) {
+      return;
+    }
+
+    if (defaultImportName === null && starImportName !== null) {
+      defaultImportName = starImportName;
+    }
+
+    if (starImportName === null && defaultImportName !== null) {
+      starImportName = defaultImportName;
+    }
+
     root
       .find(j.MemberExpression)
       .replaceWith(path => {
