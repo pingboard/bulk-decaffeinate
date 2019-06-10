@@ -2,8 +2,8 @@
  * Runs the fix-imports step on all specified JS files, and return an array of
  * the files that changed.
  */
-import { readFile, writeFile } from 'fs-promise';
-import { basename, join, relative, resolve } from 'path';
+import { existsSync, readFile, writeFile } from 'fs-promise';
+import { basename, dirname, join, relative, resolve } from 'path';
 import zlib from 'zlib';
 
 import runWithProgressBar from '../runner/runWithProgressBar';
@@ -124,14 +124,43 @@ async function fixImportsForCoffeeScript(filePath, convertedFiles) {
   let contents = (await readFile(resolvedPath)).toString();
   for (let jsBasename of jsBasenames) {
     const pathName = `[a-z\\-\\.\\/]+${jsBasename}(\\.js\\.coffee)?`;
-    const requireStatement = `\\w+ = require\\(["']${pathName}["']\\)`;
+    const requireStatement = `\\w+ = require\\(["'](${pathName})["']\\)`;
     const hasAMatch = contents.match(new RegExp(requireStatement));
     if (hasAMatch) {
       const requireLine = hasAMatch[0];
-      const updatedLine = `${requireLine.replace(/(\.js)?\.coffee/, '')}.default`;
-      contents = contents.replace(requireLine, updatedLine);
+      const importPath = hasAMatch[1];
+
+      const resolvedImportPath = resolveImportPath(filePath, importPath);
+
+      // Only update this path if it resolves to a converted file
+      // (to prevent changing imports for files with the same base name but which
+      // are located in a different directory)
+      if (resolvedImportPath && convertedFiles.includes(resolvedImportPath)) {
+        const updatedLine = `${requireLine.replace(/(\.js)?\.coffee/, '')}.default`;
+        contents = contents.replace(requireLine, updatedLine);
+      }
     }
   }
 
   await writeFile(resolvedPath, contents);
+}
+
+/**
+ * Turn an import string into an absolute path to a JS file.
+ */
+function resolveImportPath(importingFilePath, importPath) {
+  if (importPath.endsWith('.coffee')) {
+    importPath = importPath.replace(/\.coffee$/, '');
+  }
+  if (!importPath.endsWith('.js')) {
+    importPath += '.js';
+  }
+  if (importPath.startsWith('.')) {
+    let currentDir = dirname(importingFilePath);
+    let relativePath = resolve(currentDir, importPath);
+    if (existsSync(relativePath)) {
+      return relativePath;
+    }
+  }
+  return null;
 }
