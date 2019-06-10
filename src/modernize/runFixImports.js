@@ -123,8 +123,9 @@ async function fixImportsForCoffeeScript(filePath, convertedFiles) {
 
   let contents = (await readFile(resolvedPath)).toString();
   for (let jsBasename of jsBasenames) {
-    const requireFilePattern = new RegExp(`\\w+ = require\\("[a-z\\-\\.\\/]+${jsBasename}(\\.js\\.coffee)?"\\)`);
-    const hasAMatch = contents.match(requireFilePattern);
+    const pathName = `[a-z\\-\\.\\/]+${jsBasename}(\\.js\\.coffee)?`;
+    const requireStatement = `\\w+ = require\\(["']${pathName}["']\\)`;
+    const hasAMatch = contents.match(new RegExp(requireStatement));
     if (hasAMatch) {
       const requireLine = hasAMatch[0];
       const updatedLine = `${requireLine.replace(/(\.js)?\.coffee/, '')}.default`;
