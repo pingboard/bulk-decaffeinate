@@ -72,7 +72,7 @@ Re-run with the "check" command for more details.`);
       await move(coffeePath, jsPathFor(coffeePath, config));
     });
 
-  let shortDescription = getShortDescription(coffeeFiles);
+  let shortDescription = getShortDescription(coffeeFiles, config);
   let renameCommitMsg =
     `decaffeinate: ${makeFileRenameMessage(shortDescription)}`;
 
@@ -173,11 +173,15 @@ Proceeding anyway.
   }
 }
 
-function getShortDescription(coffeeFiles) {
+function getShortDescription(coffeeFiles, config) {
   let firstFile = basename(coffeeFiles[0]);
   if (coffeeFiles.length === 1) {
     return firstFile;
-  } else {
-    return `${firstFile} and ${pluralize(coffeeFiles.length - 1, 'other file')}`;
   }
+
+  if (config.searchDirectory) {
+    return `${coffeeFiles.length} files in ${config.searchDirectory}`;
+  }
+
+  return `${firstFile} and ${pluralize(coffeeFiles.length - 1, 'other file')}`;
 }
